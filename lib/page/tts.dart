@@ -32,17 +32,8 @@ class _TTSPage extends State<TTSPage> with WidgetsBindingObserver {
   var speakers = [
     "LJSpeech",
   ];
-
-  // String curruntLanguage = 'English';
+  
   String curruntSpeaker = 'LJSpeech';
-
-  // String get isKorean {
-  //   if (curruntLanguage == 'Korean') {
-  //     return "1";
-  //   } else {
-  //     return "0";
-  //   }
-  // }
 
   void synthesis(String isKorean) async {
     if (_textController.text.isEmpty) {
@@ -163,34 +154,6 @@ class _TTSPage extends State<TTSPage> with WidgetsBindingObserver {
                         )
                       ],
                     ),
-                    // const Text(
-                    //   "Langauge: ",
-                    //   style: TextStyle(color: Colors.white, fontSize: 18.0),
-                    // ),
-                    // const Padding(
-                    //     padding: EdgeInsets.fromLTRB(5.0, 0.0, 5.0, 0.0)),
-                    // Container(
-                    //   padding: const EdgeInsets.symmetric(
-                    //       horizontal: 10, vertical: 5),
-                    //   decoration: BoxDecoration(
-                    //       color: Colors.white,
-                    //       borderRadius: BorderRadius.circular(10)),
-                    //   child: DropdownButton<String>(
-                    //     value: curruntLanguage,
-                    //     onChanged: (String? newValue) =>
-                    //         setState(() => curruntLanguage = newValue!),
-                    //     items: languages
-                    //         .map<DropdownMenuItem<String>>(
-                    //             (String value) => DropdownMenuItem<String>(
-                    //                   value: value,
-                    //                   child: Text(value),
-                    //                 ))
-                    //         .toList(),
-                    //     icon: const Icon(Icons.arrow_drop_down),
-                    //     iconSize: 42,
-                    //     underline: const SizedBox(),
-                    //   ),
-                    // ),
                     const Padding(padding: EdgeInsets.all(10.0)),
                     Column(
                       children: [
@@ -225,21 +188,6 @@ class _TTSPage extends State<TTSPage> with WidgetsBindingObserver {
                     )
                   ],
                 ),
-                // const Padding(padding: EdgeInsets.all(20.0)),
-                // ElevatedButton(
-                //   style: ElevatedButton.styleFrom(
-                //       elevation: 3, minimumSize: const Size(300.0, 90.0)),
-                //   onPressed: () {
-                //     synthesis("0");
-                //   },
-                //   child: const Text(
-                //     "Synthesis",
-                //     style: TextStyle(
-                //         fontSize: 36.0,
-                //         fontWeight: FontWeight.bold,
-                //         color: Colors.white),
-                //   ),
-                // ),
                 const Padding(padding: EdgeInsets.all(20.0)),
               ],
             ),
