@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
+import 'package:translator/translator.dart';
 
 import 'package:xltts/util/utils.dart';
 import 'package:xltts/widget/text.dart';
+import 'package:xltts/widget/wait_diagram.dart';
 
 class TTSPage extends StatefulWidget {
   final int orgLang;
@@ -25,67 +27,42 @@ class _TTSPage extends State<TTSPage> with WidgetsBindingObserver {
 
   bool indicatorVisible = false;
   final hostUrl = "127.0.0.1:8000";
+  final translator = GoogleTranslator();
 
-  var languages = ["English", "Korean"];
   var speakers = [
     "LJSpeech",
   ];
 
-  String curruntLanguage = 'English';
+  // String curruntLanguage = 'English';
   String curruntSpeaker = 'LJSpeech';
 
-  String get isKorean {
-    if (curruntLanguage == 'Korean') {
-      return "1";
-    } else {
-      return "0";
-    }
-  }
+  // String get isKorean {
+  //   if (curruntLanguage == 'Korean') {
+  //     return "1";
+  //   } else {
+  //     return "0";
+  //   }
+  // }
 
-  void synthesis() async {
+  void synthesis(String isKorean) async {
     if (_textController.text.isEmpty) {
       return;
     }
 
-    // print('start');
-    // print(_textController.text);
+    if (isKorean == "1") {
+      showWaitDiagramWithMessage(context, "Translating...");
+      var translation =
+          await translator.translate(_textController.text, to: 'ko');
+      _textController.text = translation.toString();
+      Navigator.pop(context);
+    }
 
     var client = http.Client();
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return Dialog(
-          elevation: 3.0,
-          child: Container(
-            height: 300.0,
-            alignment: Alignment.center,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Transform.scale(
-                    scale: 1.5,
-                    child: const CircularProgressIndicator(),
-                  ),
-                ),
-                const Padding(padding: EdgeInsets.all(20.0)),
-                const Text(
-                  "Wait a minute...",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24.0),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
+    showWaitDiagramWithMessage(context, "Wait a minute...");
     try {
       var response = await client.get(Uri.http(
           hostUrl, "tts", {'text': _textController.text, 'is_kor': isKorean}));
       var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
-      // print(decodedResponse['key']);
       setState(() {
         audioKey = decodedResponse['key'];
       });
@@ -99,8 +76,6 @@ class _TTSPage extends State<TTSPage> with WidgetsBindingObserver {
 
   @override
   void initState() {
-    // print(widget.orgLang);
-    // print(widget.xlLang);
     super.initState();
     player = AudioPlayer();
   }
@@ -153,80 +128,118 @@ class _TTSPage extends State<TTSPage> with WidgetsBindingObserver {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      "Langauge: ",
-                      style: TextStyle(color: Colors.white, fontSize: 18.0),
+                    Column(
+                      children: [
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              elevation: 3,
+                              minimumSize: const Size(200.0, 70.0)),
+                          onPressed: () {
+                            synthesis("0");
+                          },
+                          child: const Text(
+                            "Synthesis in English",
+                            style: TextStyle(
+                                fontSize: 18.0,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white),
+                          ),
+                        ),
+                        const Padding(padding: EdgeInsets.all(10.0)),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              elevation: 3,
+                              minimumSize: const Size(200.0, 70.0)),
+                          onPressed: () {
+                            synthesis("1");
+                          },
+                          child: const Text(
+                            "Synthesis in Korean",
+                            style: TextStyle(
+                                fontSize: 18.0,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white),
+                          ),
+                        )
+                      ],
                     ),
-                    const Padding(
-                        padding: EdgeInsets.fromLTRB(5.0, 0.0, 5.0, 0.0)),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10)),
-                      child: DropdownButton<String>(
-                        value: curruntLanguage,
-                        onChanged: (String? newValue) =>
-                            setState(() => curruntLanguage = newValue!),
-                        items: languages
-                            .map<DropdownMenuItem<String>>(
-                                (String value) => DropdownMenuItem<String>(
-                                      value: value,
-                                      child: Text(value),
-                                    ))
-                            .toList(),
-                        icon: const Icon(Icons.arrow_drop_down),
-                        iconSize: 42,
-                        underline: const SizedBox(),
-                      ),
-                    ),
+                    // const Text(
+                    //   "Langauge: ",
+                    //   style: TextStyle(color: Colors.white, fontSize: 18.0),
+                    // ),
+                    // const Padding(
+                    //     padding: EdgeInsets.fromLTRB(5.0, 0.0, 5.0, 0.0)),
+                    // Container(
+                    //   padding: const EdgeInsets.symmetric(
+                    //       horizontal: 10, vertical: 5),
+                    //   decoration: BoxDecoration(
+                    //       color: Colors.white,
+                    //       borderRadius: BorderRadius.circular(10)),
+                    //   child: DropdownButton<String>(
+                    //     value: curruntLanguage,
+                    //     onChanged: (String? newValue) =>
+                    //         setState(() => curruntLanguage = newValue!),
+                    //     items: languages
+                    //         .map<DropdownMenuItem<String>>(
+                    //             (String value) => DropdownMenuItem<String>(
+                    //                   value: value,
+                    //                   child: Text(value),
+                    //                 ))
+                    //         .toList(),
+                    //     icon: const Icon(Icons.arrow_drop_down),
+                    //     iconSize: 42,
+                    //     underline: const SizedBox(),
+                    //   ),
+                    // ),
                     const Padding(padding: EdgeInsets.all(10.0)),
-                    const Text(
-                      "Speaker: ",
-                      style: TextStyle(color: Colors.white, fontSize: 18.0),
-                    ),
-                    const Padding(
-                        padding: EdgeInsets.fromLTRB(5.0, 0.0, 5.0, 0.0)),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10)),
-                      child: DropdownButton<String>(
-                        value: curruntSpeaker,
-                        onChanged: (String? newValue) =>
-                            setState(() => curruntSpeaker = newValue!),
-                        items: speakers
-                            .map<DropdownMenuItem<String>>(
-                                (String value) => DropdownMenuItem<String>(
-                                      value: value,
-                                      child: Text(value),
-                                    ))
-                            .toList(),
-                        icon: const Icon(Icons.arrow_drop_down),
-                        iconSize: 42,
-                        underline: const SizedBox(),
-                      ),
-                    ),
+                    Column(
+                      children: [
+                        const Text(
+                          "Speaker: ",
+                          style: TextStyle(color: Colors.white, fontSize: 22.0),
+                        ),
+                        const Padding(padding: EdgeInsets.all(15.0)),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(10)),
+                          child: DropdownButton<String>(
+                            value: curruntSpeaker,
+                            onChanged: (String? newValue) =>
+                                setState(() => curruntSpeaker = newValue!),
+                            items: speakers
+                                .map<DropdownMenuItem<String>>(
+                                    (String value) => DropdownMenuItem<String>(
+                                          value: value,
+                                          child: Text(value),
+                                        ))
+                                .toList(),
+                            icon: const Icon(Icons.arrow_drop_down),
+                            iconSize: 42,
+                            underline: const SizedBox(),
+                          ),
+                        ),
+                      ],
+                    )
                   ],
                 ),
-                const Padding(padding: EdgeInsets.all(20.0)),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                      elevation: 3, minimumSize: const Size(300.0, 90.0)),
-                  onPressed: () {
-                    synthesis();
-                  },
-                  child: const Text(
-                    "Synthesis",
-                    style: TextStyle(
-                        fontSize: 36.0,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white),
-                  ),
-                ),
+                // const Padding(padding: EdgeInsets.all(20.0)),
+                // ElevatedButton(
+                //   style: ElevatedButton.styleFrom(
+                //       elevation: 3, minimumSize: const Size(300.0, 90.0)),
+                //   onPressed: () {
+                //     synthesis("0");
+                //   },
+                //   child: const Text(
+                //     "Synthesis",
+                //     style: TextStyle(
+                //         fontSize: 36.0,
+                //         fontWeight: FontWeight.bold,
+                //         color: Colors.white),
+                //   ),
+                // ),
                 const Padding(padding: EdgeInsets.all(20.0)),
               ],
             ),

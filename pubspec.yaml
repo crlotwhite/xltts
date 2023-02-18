@@ -42,6 +42,7 @@ dependencies:
   flutter_expandable_fab: ^1.7.0
   speech_to_text: ^6.1.1
   avatar_glow: ^2.0.2
+  translator: ^0.1.7
   
 
 
